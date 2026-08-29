@@ -23,7 +23,11 @@ fs.mkdirSync(path.join(process.cwd(), "uploads"), { recursive: true });
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "../public")));
+const publicPath = path.resolve(process.cwd(), "public");
+app.use(express.static(publicPath));
+app.get("/", (req, res) => {
+  res.sendFile(path.join(publicPath, "index.html"));
+});
 
 let activeJob = {
   status: "idle",
@@ -293,7 +297,7 @@ app.get("/api/status", (req, res) => {
   res.json(activeJob);
 });
 
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 10000;
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`\n=================================================`);
   console.log(`🚀 FACTORY COCKPIT RUNNING: http://localhost:${PORT}`);
