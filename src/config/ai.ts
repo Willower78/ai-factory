@@ -1,135 +1,80 @@
-import { GoogleGenAI, GenerateContentConfig } from "@google/genai";
 import OpenAI from "openai";
-import dotenv from "dotenv";
 
-dotenv.config();
+const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || "";
 
-// 1. Direct Google Gemini Engine (Ideation, QA Tester, Legal, SRE)
-export const gemini = new GoogleGenAI({
-  apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || 'sk-dummy-key' || "",
-});
-
-export const GEMINI_CASCADE = [
-  "gemini-3.6-flash",
-  "gemini-3.5-flash",
-  "gemini-3.7-flash",
-  "gemini-flash-latest",
-];
-
-export async function generateWithGemini(params: {
-  contents: string;
-  config?: GenerateContentConfig;
-}) {
-  let lastError: any = null;
-  for (const model of GEMINI_CASCADE) {
-    try {
-      const response = await gemini.models.generateContent({
-        model,
-        contents: params.contents,
-        config: params.config,
-      });
-      return response.text || "";
-    } catch (err: any) {
-      lastError = err;
-      if (err.status === 503 || err.status === 429 || err.status === 404) {
-        continue;
-      }
-      throw err;
-    }
-  }
-  throw lastError;
-}
-
-// 2. OpenRouter Multi-Model Gateway
-export const openrouter = new OpenAI({
+export const openRouter = new OpenAI({
+  apiKey: apiKey,
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || 'sk-dummy-key' || "",
   defaultHeaders: {
-    "HTTP-Referer": "http://localhost:4000",
-    "X-Title": "AI SaaS Factory",
+    "HTTP-Referer": "https://render.com",
+    "X-Title": "AI Factory Cockpit",
   },
 });
 
-// Operations Manager (ChatGPT / o3 / GPT-4o-mini)
-export async function runOperationsManager(prompt: string, system?: string) {
-  const response = await openrouter.chat.completions.create({
-    model: "openai/gpt-4o-mini",
-    messages: [
-      ...(system ? [{ role: "system" as const, content: system }] : []),
-      { role: "user", content: prompt },
-    ],
-  });
-  return response.choices[0].message.content || "";
-}
+export async function generateWithGemini(params: {
+  contents?: string;
+  prompt?: string;
+  config?: { temperature?: number; systemInstruction?: string };
+}) {
+  const promptText = params.contents || params.prompt || "";
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
 
-// Backend & Database Specialist (Kimi K3 / Moonshot)
-export async function runBackendSpecialist(prompt: string, system?: string) {
-  try {
-    const response = await openrouter.chat.completions.create({
-      model: "moonshotai/kimi-k3",
-      messages: [
-        ...(system ? [{ role: "system" as const, content: system }] : []),
-        { role: "user", content: prompt },
-      ],
-    });
-    return response.choices[0].message.content || "";
-  } catch (err) {
-    console.warn("[Backend] K3 fallback to openrouter/auto...");
-    const response = await openrouter.chat.completions.create({
-      model: "openrouter/auto",
-      messages: [
-        ...(system ? [{ role: "system" as const, content: system }] : []),
-        { role: "user", content: prompt },
-      ],
-    });
-    return response.choices[0].message.content || "";
+  if (params.config?.systemInstruction) {
+    messages.push({ role: "system", content: params.config.systemInstruction });
   }
-}
+  messages.push({ role: "user", content: promptText });
 
-// Expert Coder (Claude Sonnet / Auto)
-export async function runExpertCoder(prompt: string, system?: string) {
-  const response = await openrouter.chat.completions.create({
-    model: "openrouter/auto",
-    messages: [
-      ...(system ? [{ role: "system" as const, content: system }] : []),
-      { role: "user", content: prompt },
-    ],
+  const completion = await openRouter.chat.completions.create({
+    model: "google/gemini-2.5-flash",
+    messages,
+    temperature: params.config?.temperature ?? 0.7,
   });
-  return response.choices[0].message.content || "";
+
+  return {
+    text: completion.choices[0]?.message?.content || "",
+  };
 }
 
-// Master Coder Reviewer (Claude / Auto)
-export async function runMasterCoderReview(prompt: string, system?: string) {
-  const response = await openrouter.chat.completions.create({
-    model: "openrouter/auto",
-    messages: [
-      ...(system ? [{ role: "system" as const, content: system }] : []),
-      { role: "user", content: prompt },
-    ],
-  });
-  return response.choices[0].message.content || "";
-}
-
-// Sales & Marketing Specialist (Grok / GPT)
-export async function runMarketingSpecialist(prompt: string, system?: string) {
-  try {
-    const response = await openrouter.chat.completions.create({
-      model: "x-ai/grok-beta",
-      messages: [
-        ...(system ? [{ role: "system" as const, content: system }] : []),
-        { role: "user", content: prompt },
-      ],
-    });
-    return response.choices[0].message.content || "";
-  } catch (err) {
-    console.warn("[Marketing] Grok fallback to gpt-4o-mini...");
-    const response = await openrouter.chat.completions.create({
-      model: "openai/gpt-4o-mini",
-      messages: [
-        ...(system ? [{ role: "system" as const, content: system }] : []),
-        { role: "user", content: prompt },
-      ],
-    });
-    return response.choices[0].message.content || "";
+export async function generateWithClaude(params: {
+  prompt: string;
+  system?: string;
+  temperature?: number;
+}) {
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+  if (params.system) {
+    messages.push({ role: "system", content: params.system });
   }
+  messages.push({ role: "user", content: params.prompt });
+
+  const completion = await openRouter.chat.completions.create({
+    model: "anthropic/claude-3.7-sonnet",
+    messages,
+    temperature: params.temperature ?? 0.7,
+  });
+
+  return {
+    text: completion.choices[0]?.message?.content || "",
+  };
+}
+
+export async function generateWithOpenAI(params: {
+  prompt: string;
+  system?: string;
+  temperature?: number;
+}) {
+  const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
+  if (params.system) {
+    messages.push({ role: "system", content: params.system });
+  }
+  messages.push({ role: "user", content: params.prompt });
+
+  const completion = await openRouter.chat.completions.create({
+    model: "openai/gpt-4o",
+    messages,
+    temperature: params.temperature ?? 0.7,
+  });
+
+  return {
+    text: completion.choices[0]?.message?.content || "",
+  };
 }
