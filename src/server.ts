@@ -300,6 +300,105 @@ app.get("/api/status", (req, res) => {
 });
 
 const PORT = process.env.PORT || 10000;
+
+app.get("/api/preview", (req, res) => {
+  try {
+    const targetDir = path.resolve(process.cwd(), "output/app");
+    const pageTsxPath = path.join(targetDir, "app", "page.tsx");
+
+    if (!fs.existsSync(pageTsxPath)) {
+      return res.send(`
+        <!DOCTYPE html>
+        <html>
+          <head><script src="https://cdn.tailwindcss.com"></script></head>
+          <body class="bg-slate-950 text-slate-400 flex items-center justify-center h-screen font-sans">
+            <div class="text-center p-8 border border-slate-800 rounded-xl bg-slate-900/60 shadow-xl">
+              <p class="text-emerald-400 font-semibold mb-2">Build In Progress or Not Started</p>
+              <p class="text-xs text-slate-500">Trigger a build from the AI Factory to generate the preview.</p>
+            </div>
+          </body>
+        </html>
+      `);
+    }
+
+    let pageCode = fs.readFileSync(pageTsxPath, "utf8");
+
+    // Clean imports, directives and "export default" to run standalone in browser React
+    pageCode = pageCode
+      .replace(/^[s]*["']use client["'];?/gm, "")
+      .replace(/^[s]*imports+.*?froms+['"].*?['"];?/gm, "")
+      .replace(/^[s]*exports+defaults+functions+/gm, "function AppMain()")
+      .replace(/^[s]*exports+functions+/gm, "function ")
+      .replace(/^[s]*exports+defaults+/gm, "const AppMain = ");
+
+    const htmlDoc = `<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 500: '#10b981', 600: '#059669' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    body { background-color: #020617; color: #f8fafc; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
+  </style>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useMemo, useRef } = React;
+
+    // Fallback Lucide Icon component proxy
+    const LucideIcon = ({ name, size = 18, className = "" }) => {
+      useEffect(() => {
+        if (window.lucide) window.lucide.createIcons();
+      }, [name]);
+      return <i data-lucide={name ? name.toLowerCase().replace(/([a-z])([A-Z])/g, '$1-$2') : "activity"} className={className} style={{ width: size, height: size }}></i>;
+    };
+
+    // Proxy common icons dynamically into global React scope
+    const iconNames = ["Sparkles","Check","X","Activity","BarChart","Calendar","DollarSign","Globe","Layers","Lock","Mail","Play","Plus","Search","Settings","Shield","Trash","User","Users","Zap","Menu","TrendingUp","ArrowRight","Download","Share2"];
+    iconNames.forEach(icon => {
+      window[icon] = (props) => <LucideIcon name={icon} {...props} />;
+    });
+
+    ${pageCode}
+
+    const AppContainer = typeof AppMain !== 'undefined' ? AppMain : (typeof App !== 'undefined' ? App : () => <div className="p-8 text-center text-red-400">Component root not found</div>);
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<AppContainer />);
+
+    setTimeout(() => {
+      if (window.lucide) window.lucide.createIcons();
+    }, 100);
+  </script>
+</body>
+</html>`;
+
+    res.setHeader("Content-Type", "text/html");
+    res.send(htmlDoc);
+  } catch (err) {
+    res.status(500).send(`<div style="color:red;padding:20px;font-family:monospace;">Preview compilation failed: ${err.message}</div>`);
+  }
+});
+
 app.listen(Number(PORT), "0.0.0.0", () => {
   console.log(`\n=================================================`);
   console.log(`🚀 FACTORY COCKPIT RUNNING: http://localhost:${PORT}`);

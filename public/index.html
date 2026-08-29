@@ -354,7 +354,7 @@
 
     function reloadPreview() {
       const frame = document.getElementById('sandboxFrame');
-      frame.src = `http://localhost:3000?_t=${Date.now()}`;
+      frame.src = `/api/preview?_t=${Date.now()}`;
     }
 
     async function submitTweak() {
