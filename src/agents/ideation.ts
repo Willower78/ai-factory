@@ -2,8 +2,10 @@ import { generateWithGemini } from "../config/ai";
 
 export interface IdeaItem {
   id: string;
-  name: string;
+  title: string;
+  tagline: string;
   niche: string;
+  tier: string;
   problem: string;
   solution: string;
   targetAudience: string;
@@ -14,8 +16,10 @@ export interface IdeaItem {
 const fallbackIdeas: IdeaItem[] = [
   {
     id: "idea-1",
-    name: "LeadPulse AI",
+    title: "LeadPulse AI",
+    tagline: "AI sales intelligence engine generating custom prospect dossiers in seconds.",
     niche: "B2B Sales Automation",
+    tier: "$15K MRR Potential",
     problem: "Outreach personalization takes too much manual research time.",
     solution: "Generates bespoke pitch decks and dynamic dossiers per prospect.",
     targetAudience: "B2B Sales Reps & Agency Owners",
@@ -24,8 +28,10 @@ const fallbackIdeas: IdeaItem[] = [
   },
   {
     id: "idea-2",
-    name: "StaffFlow SOP",
+    title: "StaffFlow SOP",
+    tagline: "Voice-to-SOP engine that turns speech into step-by-step checklists.",
     niche: "Operations Management",
+    tier: "$12K MRR Potential",
     problem: "Documenting internal business processes and checklists is tedious.",
     solution: "Voice-to-SOP engine that turns speech into step-by-step checklists.",
     targetAudience: "Agencies and Small Businesses",
@@ -34,8 +40,10 @@ const fallbackIdeas: IdeaItem[] = [
   },
   {
     id: "idea-3",
-    name: "ReviewVault",
+    title: "ReviewVault AI",
+    tagline: "Reputation automation with smart multi-platform contextual response drafts.",
     niche: "Local Business Reputation",
+    tier: "$18K MRR Potential",
     problem: "Multi-location venues miss critical customer feedback and replies.",
     solution: "Aggregates Google/Yelp reviews and automates context-aware responses.",
     targetAudience: "Salons, Clinics, and Restaurants",
@@ -53,10 +61,12 @@ Format:
 [
   {
     "id": "idea-1",
-    "name": "Product Name",
+    "title": "LeadPulse AI",
+    "tagline": "Short punchy one-sentence value proposition",
     "niche": "Target Niche",
-    "problem": "Problem solved",
-    "solution": "Key solution",
+    "tier": "High Value",
+    "problem": "Core problem solved",
+    "solution": "Key SaaS solution",
     "targetAudience": "Target audience",
     "mrrPotential": "$5k - $15k / mo",
     "buildComplexity": "Low"
@@ -70,8 +80,20 @@ Format:
 
     if (text) {
       const parsed = JSON.parse(text);
-      if (Array.isArray(parsed) && parsed.length > 0) {
-        return parsed;
+      const items = Array.isArray(parsed) ? parsed : (parsed.ideas || []);
+      if (items.length > 0) {
+        return items.map((item: any, idx: number) => ({
+          id: item.id || `idea-${idx + 1}`,
+          title: item.title || item.name || "Micro SaaS Product",
+          tagline: item.tagline || item.solution || item.problem || "",
+          niche: item.niche || "B2B SaaS",
+          tier: item.tier || item.mrrPotential || "Micro-SaaS",
+          problem: item.problem || "",
+          solution: item.solution || "",
+          targetAudience: item.targetAudience || "",
+          mrrPotential: item.mrrPotential || "$5k - $15k / mo",
+          buildComplexity: item.buildComplexity || "Low"
+        }));
       }
     }
   } catch (err: any) {

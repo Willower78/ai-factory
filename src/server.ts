@@ -78,11 +78,14 @@ app.get("/api/projects", (req, res) => {
 
 app.get("/api/ideas", async (req, res) => {
   try {
-    const focus = (req.query.focus as string) || "";
-    const data = await runIdeationAgent(focus);
-    res.json(data);
+    const focus = req.query.focus as string | undefined;
+    const ideas = await scanMarket(focus);
+    res.json({ ideas, status: "success" });
   } catch (err: any) {
-    res.status(500).json({ error: err.message });
+    console.error("API /api/ideas failed:", err);
+    res.status(500).json({ ideas: [], error: err.message || "Failed to scan market" });
+  }
+});
   }
 });
 
