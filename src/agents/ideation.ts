@@ -1,63 +1,82 @@
 import { generateWithGemini } from "../config/ai";
 
-export interface SaaSConcept {
-  title: string;
-  tagline: string;
-  tier: "fast" | "advanced";
-  industry: string;
+export interface IdeaItem {
+  id: string;
+  name: string;
+  niche: string;
+  problem: string;
+  solution: string;
   targetAudience: string;
-  painPoint: string;
-  mvpFeatures: string[];
-  monetization: string;
-  estimatedBuildDays: number;
+  mrrPotential: string;
+  buildComplexity: "Low" | "Medium" | "High";
 }
 
-export interface IdeationResponse {
-  date: string;
-  ideas: SaaSConcept[];
-}
+const fallbackIdeas: IdeaItem[] = [
+  {
+    id: "idea-1",
+    name: "LeadPulse AI",
+    niche: "B2B Sales Automation",
+    problem: "Outreach personalization takes too much manual research time.",
+    solution: "Generates bespoke pitch decks and dynamic dossiers per prospect.",
+    targetAudience: "B2B Sales Reps & Agency Owners",
+    mrrPotential: "$8k - $20k / mo",
+    buildComplexity: "Low"
+  },
+  {
+    id: "idea-2",
+    name: "StaffFlow SOP",
+    niche: "Operations Management",
+    problem: "Documenting internal business processes and checklists is tedious.",
+    solution: "Voice-to-SOP engine that turns speech into step-by-step checklists.",
+    targetAudience: "Agencies and Small Businesses",
+    mrrPotential: "$5k - $14k / mo",
+    buildComplexity: "Low"
+  },
+  {
+    id: "idea-3",
+    name: "ReviewVault",
+    niche: "Local Business Reputation",
+    problem: "Multi-location venues miss critical customer feedback and replies.",
+    solution: "Aggregates Google/Yelp reviews and automates context-aware responses.",
+    targetAudience: "Salons, Clinics, and Restaurants",
+    mrrPotential: "$6k - $18k / mo",
+    buildComplexity: "Medium"
+  }
+];
 
-export async function runIdeationAgent(focusSector?: string): Promise<IdeationResponse> {
-  console.log(`[Ideation Agent - Gemini] Scanning global high-intent SaaS opportunities across all industries...`);
-  
-  const sectorPrompt = focusSector && focusSector.trim() !== ""
-    ? `Specific focus requested: "${focusSector}".`
-    : `Explore diverse, high-margin industries with pressing digital workflow bottlenecks (e.g. trades & field services, clinic admin, property management, compliance automation, logistics dispatch, B2B wholesale, niche professional services).`;
+export async function scanMarket(focus?: string): Promise<IdeaItem[]> {
+  const prompt = `You are a high-speed SaaS market researcher.
+Generate 4 high-ROI micro-SaaS product ideas. ${focus ? `Focus on: "${focus}"` : ""}
 
-  const systemInstruction = `You are an elite Market Research & Micro-SaaS Product Strategist.
-Identify clear, underserved gaps across any industry where a focused software tool solves an immediate operational pain point.
-Generate exactly 10 distinct concepts:
-- 8 'fast' tier (laser-focused MVP buildable in 1-2 days).
-- 2 'advanced' tier (richer automation or multi-sided workflow buildable in 3-5 days).
+Respond ONLY with a valid JSON array of objects. No markdown backticks, no explanations.
+Format:
+[
+  {
+    "id": "idea-1",
+    "name": "Product Name",
+    "niche": "Target Niche",
+    "problem": "Problem solved",
+    "solution": "Key solution",
+    "targetAudience": "Target audience",
+    "mrrPotential": "$5k - $15k / mo",
+    "buildComplexity": "Low"
+  }
+]`;
 
-Ensure high industry diversity across the 10 ideas.
-Output ONLY raw JSON matching this schema:
-{
-  "date": "YYYY-MM-DD",
-  "ideas": [
-    {
-      "title": "string",
-      "tagline": "string",
-      "tier": "fast",
-      "industry": "string",
-      "targetAudience": "string",
-      "painPoint": "string",
-      "mvpFeatures": ["feature 1", "feature 2", "feature 3"],
-      "monetization": "string",
-      "estimatedBuildDays": 2
+  try {
+    const res = await generateWithGemini({ prompt, config: { temperature: 0.7 } });
+    let text = (res.text || "").trim();
+    text = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+
+    if (text) {
+      const parsed = JSON.parse(text);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
     }
-  ]
-}`;
+  } catch (err: any) {
+    console.error("[Ideation Agent OpenRouter Log]:", err?.message || err);
+  }
 
-  const rawRes = await generateWithGemini({
-    contents: `Generate 10 high-demand, monetization-ready micro-SaaS concepts across diverse industries. ${sectorPrompt}`,
-    config: {
-      systemInstruction,
-      responseMimeType: "application/json",
-      temperature: 0.85,
-    },
-  });
-
-  const clean = rawRes.replace(/^```json\s*/, "").replace(/```$/, "").trim();
-  return JSON.parse(clean) as IdeationResponse;
+  return fallbackIdeas;
 }
