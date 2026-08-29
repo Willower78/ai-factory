@@ -16,7 +16,6 @@ export const openRouter = new OpenAI({
 
 export const openrouter = openRouter;
 
-// Generic helper for OpenRouter chat completions
 async function completePrompt(model: string, prompt: string, system?: string, temperature = 0.7) {
   const messages: OpenAI.Chat.Completions.ChatCompletionMessageParam[] = [];
   if (system) {
@@ -33,7 +32,7 @@ async function completePrompt(model: string, prompt: string, system?: string, te
   return completion.choices[0]?.message?.content || "";
 }
 
-// 1. Unified Gemini Runner (used by ideation, tester, legal, monitor)
+// 1. Unified Gemini Runner
 export async function generateWithGemini(params: {
   contents?: string;
   prompt?: string;
@@ -82,7 +81,7 @@ export async function runOperationsManager(prompt: string, system?: string) {
   return completePrompt("openai/gpt-4o-mini", prompt, system);
 }
 
-// 5. Backend & Database Specialist (Kimi K3 with OpenRouter auto fallback)
+// 5. Backend & Database Specialist
 export async function runBackendSpecialist(prompt: string, system?: string) {
   try {
     return await completePrompt("moonshotai/kimi-k3", prompt, system);
