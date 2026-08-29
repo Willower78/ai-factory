@@ -1,127 +1,138 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AI SaaS Factory Cockpit</title>
+  <title>AI SaaS Factory</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    body { font-family: 'Inter', sans-serif; }
-    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #0f172a; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: #475569; }
   </style>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen">
+<body class="bg-slate-950 text-slate-100 min-h-screen font-sans flex flex-col antialiased selection:bg-emerald-500 selection:text-black">
 
-  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-black text-xl">⚡</div>
-        <h1 class="font-bold text-lg">AI SaaS Factory <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full ml-2">Project Vault</span></h1>
+  <!-- Top Navigation Bar -->
+  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
+    <div class="flex items-center gap-3">
+      <div class="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold text-base shadow-sm">
+        ⚡
       </div>
-      <div class="flex items-center gap-3">
-        <button onclick="hardResetFactory()" class="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg transition font-mono">↻ Reset Pipeline</button>
+      <div>
+        <h1 class="font-bold text-sm tracking-wide text-white flex items-center gap-2">
+          AI SaaS Factory <span class="text-[10px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-1.5 py-0.5 rounded font-mono font-normal">v3.5 Engine</span>
+        </h1>
+        <p class="text-[11px] text-slate-400 font-mono">Air-Gapped Multi-Agent Software Assembly Line</p>
       </div>
+    </div>
+
+    <div class="flex items-center gap-3">
+      <button onclick="resetPipeline()" class="text-xs bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 px-3 py-1.5 rounded-lg transition font-medium flex items-center gap-1.5 shadow-sm">
+        <i class="fa-solid fa-rotate-left"></i> Reset Pipeline
+      </button>
     </div>
   </header>
 
-  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
-    
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
-      
-      <!-- Left Column: Tabs -->
-      <section class="lg:col-span-5 space-y-4">
-        
-        <div class="flex border-b border-slate-800 text-xs font-semibold">
-          <button onclick="switchTab('custom')" id="tabCustomBtn" class="pb-2 px-3 border-b-2 border-emerald-400 text-emerald-400">Custom Prompt & Files</button>
-          <button onclick="switchTab('market')" id="tabMarketBtn" class="pb-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">Market Scan (10)</button>
-          <button onclick="switchTab('vault')" id="tabVaultBtn" class="pb-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">Saved Projects</button>
-        </div>
+  <!-- Main Container -->
+  <main class="flex-1 p-6 max-w-7xl w-full mx-auto grid grid-cols-1 lg:grid-cols-12 gap-6">
 
-        <!-- TAB 1: Custom Prompt -->
-        <div id="tabCustom" class="glass rounded-xl p-5 space-y-3">
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Custom Product Specification</label>
-            <textarea id="customPrompt" rows="4" placeholder="Describe the app you want to build..." 
-                      class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500"></textarea>
-          </div>
+    <!-- Left Column: Input & Blueprints -->
+    <div class="lg:col-span-6 flex flex-col gap-6">
 
-          <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Attach Spec & Codebase Files (.ZIP, PDF, CSV, TXT)</label>
-            <input type="file" id="fileInput" multiple class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-emerald-400 hover:file:bg-slate-700 cursor-pointer bg-slate-900 border border-slate-800 rounded-lg" />
-          </div>
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-800 gap-2">
+        <button onclick="switchTab('custom')" id="tab-custom" class="px-4 py-2 text-xs font-semibold border-b-2 border-emerald-500 text-emerald-400 transition flex items-center gap-2">
+          <i class="fa-solid fa-code"></i> Custom Build
+        </button>
+        <button onclick="switchTab('market')" id="tab-market" class="px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2">
+          <i class="fa-solid fa-chart-line"></i> Market Scan
+        </button>
+      </div>
 
-          <button onclick="submitCustomBuild()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs py-2.5 rounded-lg transition shadow-md shadow-emerald-500/20">
-            Shred & Dispatch to Isolated Agents →
+      <!-- Tab Content: Custom Build -->
+      <div id="view-custom" class="flex flex-col gap-4">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-lg">
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">Project Title</label>
+          <input type="text" id="customTitle" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 mb-3" placeholder="e.g. ArbiPulse Pro – Multi-Sport Arbitrage Terminal">
+
+          <label class="block text-xs font-medium text-slate-300 mb-1.5">Project Blueprint / Requirements</label>
+          <textarea id="customPrompt" rows="8" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono transition" placeholder="Describe the application, data models, calculations, sports markets, and UI components..."></textarea>
+
+          <button onclick="submitCustomBuild()" id="submitBtn" class="mt-3 w-full bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold py-2.5 rounded-lg transition flex items-center justify-center gap-2 shadow-sm">
+            <i class="fa-solid fa-paper-plane"></i> Render 3 UI Wireframes
           </button>
         </div>
+      </div>
 
-        <!-- TAB 2: Market Opportunities Feed -->
-        <div id="tabMarket" class="hidden space-y-3">
-          <div class="flex gap-2">
-            <input type="text" id="industryFilter" placeholder="Filter niche..." 
-                   class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500" 
-                   onkeydown="if(event.key === 'Enter') fetchIdeas()" />
-            <button onclick="fetchIdeas()" class="text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-black text-emerald-400 font-medium px-3 py-1.5 rounded-lg border border-emerald-500/30 transition">Scan</button>
-          </div>
-          <div id="ideasList" class="space-y-3 max-h-[45vh] overflow-y-auto pr-1"></div>
+      <!-- Tab Content: Market Scan -->
+      <div id="view-market" class="hidden flex flex-col gap-4">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-lg flex gap-2">
+          <input type="text" id="scanFocusInput" class="flex-1 bg-slate-950 border border-slate-700/80 rounded-lg px-3 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500" placeholder="Focus niche (e.g. Sports betting, CleanTech, Logistics)...">
+          <button onclick="scanMarket()" id="scanBtn" class="bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold px-4 py-2 rounded-lg transition">
+            Scan Market
+          </button>
         </div>
+        <div id="ideasList" class="grid grid-cols-1 gap-3"></div>
+      </div>
 
-        <!-- TAB 3: Saved Projects Vault Gallery -->
-        <div id="tabVault" class="hidden space-y-3">
-          <div class="flex justify-between items-center">
-            <span class="text-xs text-slate-400 font-mono">Archive Location: ~/ai-factory/projects_vault/</span>
-            <button onclick="fetchVaultProjects()" class="text-xs bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded border border-slate-700">Refresh</button>
-          </div>
-          <div id="vaultList" class="space-y-3 max-h-[45vh] overflow-y-auto pr-1"></div>
+      <!-- Visual Blueprint Picker (Step 2) -->
+      <div id="uiPickerCard" class="hidden bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-lg flex flex-col gap-3">
+        <div class="flex items-center justify-between">
+          <h3 class="text-xs font-semibold text-slate-200 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Select Visual Design Direction
+          </h3>
+          <button onclick="regenerateWireframes()" id="regenUiBtn" class="text-xs bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-2.5 py-1 rounded-lg transition font-medium flex items-center gap-1.5">
+            <span>↻ Re-roll Wireframes</span>
+          </button>
         </div>
+        <div id="uiOptionsContainer" class="grid grid-cols-1 md:grid-cols-3 gap-3"></div>
+      </div>
 
-      </section>
-
-      <!-- Right Column: Logs -->
-      <section class="lg:col-span-7">
-        <div class="glass rounded-xl p-5 h-full flex flex-col justify-between">
-          <div class="flex items-center justify-between mb-3">
-            <span id="currentStepText" class="text-xs font-medium text-slate-300">Ready to plan</span>
-            <span id="jobBadge" class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700">Idle</span>
-          </div>
-
-          <div class="bg-black/70 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-300 h-64 overflow-y-auto space-y-1.5" id="logBox">
-            <div class="text-slate-500">// Pipeline ready. Upload ZIP, enter prompt, or view Saved Projects...</div>
-          </div>
+      <!-- Terminal / Logs Output -->
+      <div class="bg-slate-900/80 border border-slate-800 rounded-xl p-4 shadow-lg flex flex-col gap-2">
+        <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+          <span class="flex items-center gap-2"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Assembly Line Log</span>
+          <span id="currentStepText" class="text-emerald-400">Idle</span>
         </div>
-      </section>
+        <div id="logsConsole" class="h-36 bg-slate-950 border border-slate-800 rounded-lg p-3 font-mono text-[11px] text-slate-300 overflow-y-auto space-y-1">
+          <div class="text-slate-600">> System initialized. Ready to build.</div>
+        </div>
+      </div>
     </div>
 
-    <!-- 3 UI Wireframe Selection -->
-    <section id="uiSelectionCard" class="hidden glass rounded-2xl p-6 border border-emerald-500/40 space-y-6">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
-        <div>
-          <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
-            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
-            Select Visual Design Direction
-          </h2>
-          <p class="text-xs text-slate-400">Pick the visual direction for Claude to build:</p>
+    <!-- Right Column: Interactive Sandbox & Iteration Console -->
+    <div class="lg:col-span-6 flex flex-col gap-4">
+
+      <!-- Iteration & Continuation Console -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-4 shadow-lg">
+        <div class="flex items-center justify-between mb-2">
+          <label class="text-xs font-semibold text-slate-300 flex items-center gap-1.5">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Iterate & Continue Building App
+          </label>
+          <span class="text-[11px] text-slate-500 font-mono">Preserves existing code & adds features</span>
         </div>
-        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-mono">3 Options Ready</span>
+        <textarea id="tweakPrompt" rows="3" class="w-full bg-slate-950 border border-slate-700/80 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-sans transition" placeholder="e.g. Add an export-to-CSV button, add a Telegram alerts webhook modal, and include 10 more live tennis fixtures..."></textarea>
+        <div class="flex items-center justify-between mt-3">
+          <div class="text-[11px] text-slate-500 font-mono">
+            ⚡ Lead Coder & Reviewer update the preview.
+          </div>
+          <button onclick="applyTweak()" id="tweakBtn" class="bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs px-4 py-2 rounded-lg transition flex items-center gap-1.5 shadow">
+            <span>Execute Build Prompt 🚀</span>
+          </button>
+        </div>
       </div>
-      
-      <div id="uiCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
-    </section>
 
-    <!-- Sandbox & Deployment -->
-    <section id="previewSection" class="hidden glass rounded-2xl p-6 border border-slate-800 space-y-4">
-      
-      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
-        <div>
-          <h2 class="font-bold text-base text-slate-100 flex items-center gap-2">
-            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
-            Interactive Live Sandbox
-          </h2>
-          <p class="text-xs text-slate-400">Live preview running at localhost:3000. Tweak below or deploy directly to Vercel:</p>
-        </div>
-
-        <div class="flex items-center gap-2.5 flex-wrap">
+      <!-- Live Sandbox Frame Area -->
+      <div class="bg-slate-900/60 border border-slate-800 rounded-xl p-4 shadow-lg flex-1 flex flex-col gap-3 min-h-[550px]">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+            <span class="text-xs font-semibold text-slate-200">Interactive Live Sandbox</span>
+          </div>
           <div class="flex items-center gap-2">
             <a href="/api/preview" target="_blank" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm">
               <span>Open in New Tab ↗</span>
@@ -130,233 +141,202 @@
               ↻ Reload Frame
             </button>
           </div>
-          <button onclick="deployToVercel()" id="deployBtn" class="text-xs bg-white hover:bg-slate-200 text-black font-extrabold px-4 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-white/10">
-            <span>▲ Deploy to Vercel</span>
-          </button>
-          <a id="liveVercelLink" href="#" target="_blank" class="hidden text-xs bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold px-4 py-1.5 rounded-lg transition animate-bounce">
-            Open Live App 🚀
-          </a>
+        </div>
+
+        <div class="flex-1 w-full bg-slate-950 border border-slate-800 rounded-lg overflow-hidden relative shadow-inner">
+          <iframe id="previewFrame" src="/api/preview" class="w-full h-full border-0 absolute inset-0 bg-white"></iframe>
         </div>
       </div>
 
-      <!-- Prompt Tweaker Bar -->
-      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex gap-2 items-center">
-        <input type="text" id="tweakInput" placeholder="Prompt a UI/UX tweak..." 
-               class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500" 
-               onkeydown="if(event.key === 'Enter') submitTweak()" />
-        <button onclick="submitTweak()" id="tweakBtn" class="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-5 py-2 rounded-lg transition">Apply Tweak</button>
-      </div>
-
-      <!-- Sandbox Iframe -->
-      <div class="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 h-[700px] shadow-2xl relative">
-        <iframe id="sandboxFrame" src="about:blank" class="w-full h-full border-none"></iframe>
-      </div>
-
-    </section>
-
+    </div>
   </main>
 
   <script>
-    let currentIdeas = [];
     let pollInterval = null;
 
     function switchTab(tab) {
-      const tabs = ['custom', 'market', 'vault'];
-      tabs.forEach(t => {
-        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.add('hidden');
-        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`).className = "pb-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
-      });
+      const customView = document.getElementById("view-custom");
+      const marketView = document.getElementById("view-market");
+      const tabCustom = document.getElementById("tab-custom");
+      const tabMarket = document.getElementById("tab-market");
 
-      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
-      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Btn`).className = "pb-2 px-3 border-b-2 border-emerald-400 text-emerald-400";
-
-      if (tab === 'market' && currentIdeas.length === 0) fetchIdeas();
-      if (tab === 'vault') fetchVaultProjects();
-    }
-
-    async function fetchVaultProjects() {
-      const list = document.getElementById('vaultList');
-      list.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs glass rounded-xl animate-pulse">Loading saved builds...</div>';
-      const res = await fetch('/api/projects');
-      const data = await res.json();
-      
-      list.innerHTML = '';
-      if (!data.projects || data.projects.length === 0) {
-        list.innerHTML = '<div class="p-6 text-center text-slate-500 text-xs glass rounded-xl">No saved projects in vault yet.</div>';
-        return;
+      if (tab === "custom") {
+        customView.classList.remove("hidden");
+        marketView.classList.add("hidden");
+        tabCustom.className = "px-4 py-2 text-xs font-semibold border-b-2 border-emerald-500 text-emerald-400 transition flex items-center gap-2";
+        tabMarket.className = "px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2";
+      } else {
+        customView.classList.add("hidden");
+        marketView.classList.remove("hidden");
+        tabMarket.className = "px-4 py-2 text-xs font-semibold border-b-2 border-emerald-500 text-emerald-400 transition flex items-center gap-2";
+        tabCustom.className = "px-4 py-2 text-xs font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 transition flex items-center gap-2";
       }
-
-      data.projects.forEach(p => {
-        const item = document.createElement('div');
-        item.className = "glass p-4 rounded-xl border border-slate-800 space-y-2";
-        item.innerHTML = `
-          <div class="flex justify-between items-start">
-            <div>
-              <h4 class="font-bold text-slate-100 text-xs">${p.name}</h4>
-              <span class="text-[10px] text-slate-400 font-mono">${p.savedAt}</span>
-            </div>
-            ${p.vercelUrl ? `<a href="${p.vercelUrl}" target="_blank" class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded font-mono">Live on Vercel ↗</a>` : `<span class="text-[10px] text-slate-500 font-mono">Local Snapshot</span>`}
-          </div>
-          <div class="text-[9px] text-slate-500 font-mono truncate">Dir: ${p.path}</div>
-        `;
-        list.appendChild(item);
-      });
-    }
-
-    async function hardResetFactory() {
-      await fetch('/api/reset', { method: 'POST' });
-      document.getElementById('uiSelectionCard').classList.add('hidden');
-      document.getElementById('previewSection').classList.add('hidden');
-      document.getElementById('liveVercelLink').classList.add('hidden');
-      document.getElementById('sandboxFrame').src = "about:blank";
-      document.getElementById('logBox').innerHTML = '<div class="text-slate-500">// Pipeline reset. Ready for new input...</div>';
-      document.getElementById('jobBadge').innerText = "Idle";
-      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700";
-      document.getElementById('currentStepText').innerText = "Ready to plan";
     }
 
     async function submitCustomBuild() {
-      const prompt = document.getElementById('customPrompt').value.trim();
-      const filesInput = document.getElementById('fileInput');
-      
-      const formData = new FormData();
-      formData.append('customPrompt', prompt);
-      for (let i = 0; i < filesInput.files.length; i++) {
-        formData.append('attachments', filesInput.files[i]);
+      const title = document.getElementById("customTitle").value.trim();
+      const prompt = document.getElementById("customPrompt").value.trim();
+      if (!prompt) {
+        alert("Please enter project instructions or a blueprint.");
+        return;
       }
 
-      document.getElementById('uiSelectionCard').classList.add('hidden');
-      document.getElementById('previewSection').classList.add('hidden');
-      document.getElementById('jobBadge').innerText = "Shredding Inputs";
-      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse";
+      const btn = document.getElementById("submitBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block animate-spin">↻</span> Operations Manager Slicing Architecture...';
 
-      await fetch('/api/custom-build', { method: 'POST', body: formData });
-      startPolling();
-    }
+      const formData = new FormData();
+      formData.append("customPrompt", (title ? `[Project: ${title}]\n\n` : "") + prompt);
 
-    async function fetchIdeas() {
-      const list = document.getElementById('ideasList');
-      const query = document.getElementById('industryFilter').value.trim();
-      list.innerHTML = '<div class="p-8 text-center text-slate-400 text-sm glass rounded-xl animate-pulse">Scanning market gaps...</div>';
-      const res = await fetch(`/api/ideas?focus=${encodeURIComponent(query)}`);
-      const data = await res.json();
-      currentIdeas = data.ideas || [];
-      renderIdeas();
-    }
-
-    function renderIdeas() {
-      const list = document.getElementById('ideasList');
-      list.innerHTML = '';
-      currentIdeas.forEach((idea, idx) => {
-        const card = document.createElement('div');
-        card.className = "glass p-4 rounded-xl hover:border-emerald-500/50 transition cursor-pointer";
-        card.innerHTML = `
-          <div class="flex justify-between items-start mb-1">
-            <h4 class="font-bold text-slate-100 text-xs">${idea.title}</h4>
-            <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">${idea.tier}</span>
-          </div>
-          <p class="text-[11px] text-slate-400 mb-2">${idea.tagline}</p>
-          <button onclick="startUIPlanning(${idx})" class="w-full text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-black text-emerald-400 font-semibold py-1 rounded-md border border-emerald-500/30 transition">Render 3 UI Wireframes →</button>
-        `;
-        list.appendChild(card);
-      });
-    }
-
-    async function startUIPlanning(idx) {
-      document.getElementById('uiSelectionCard').classList.add('hidden');
-      document.getElementById('previewSection').classList.add('hidden');
-      document.getElementById('jobBadge').innerText = "Rendering UI";
-      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse";
-
-      await fetch('/api/prepare-ui', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ concept: currentIdeas[idx] })
-      });
-
-      startPolling();
-    }
-
-    function startPolling() {
-      if (pollInterval) clearInterval(pollInterval);
-      pollInterval = setInterval(async () => {
-        const res = await fetch('/api/status');
+      try {
+        const res = await fetch("/api/custom-build", { method: "POST", body: formData });
         const data = await res.json();
-        
-        document.getElementById('logBox').innerHTML = data.logs.map(l => `<div class="py-0.5">${l}</div>`).join('');
-        document.getElementById('logBox').scrollTop = document.getElementById('logBox').scrollHeight;
-        document.getElementById('currentStepText').innerText = data.currentStep;
-
-        if (data.status === 'awaiting_ui_choice') {
-          clearInterval(pollInterval);
-          document.getElementById('jobBadge').innerText = "Choice Needed";
-          document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20";
-          renderVisualUICards(data.uiOptions);
-        } else if (data.status === 'completed') {
-          clearInterval(pollInterval);
-          document.getElementById('jobBadge').innerText = "Live";
-          document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-500 text-black";
-          showLiveSandbox(data.buildTimestamp);
-          if (data.deployedUrl) {
-            const liveLink = document.getElementById('liveVercelLink');
-            liveLink.href = data.deployedUrl;
-            liveLink.classList.remove('hidden');
-          }
+        if (data.status === "processing") {
+          startPolling();
         }
-      }, 1200);
+      } catch (err) {
+        console.error("Custom build submission failed:", err);
+      }
     }
 
-    function renderVisualUICards(options) {
-      const section = document.getElementById('uiSelectionCard');
-      const grid = document.getElementById('uiCardsGrid');
-      grid.innerHTML = '';
+    async function scanMarket() {
+      const btn = document.getElementById("scanBtn");
+      const focus = document.getElementById("scanFocusInput").value.trim();
+      btn.disabled = true;
+      btn.innerText = "Scanning...";
+
+      try {
+        const res = await fetch(`/api/ideas?focus=${encodeURIComponent(focus)}`);
+        const data = await res.json();
+        const list = document.getElementById("ideasList");
+        list.innerHTML = "";
+
+        (data.ideas || []).forEach(idea => {
+          const card = document.createElement("div");
+          card.className = "bg-slate-900/90 border border-slate-800 rounded-lg p-3 hover:border-slate-700 transition cursor-pointer";
+          card.onclick = () => {
+            document.getElementById("customTitle").value = idea.name;
+            document.getElementById("customPrompt").value = `Problem: ${idea.problem}\nSolution: ${idea.solution}\nRevenue Model: ${idea.potentialRevenue}`;
+            switchTab("custom");
+          };
+          card.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-xs font-bold text-white">${idea.name}</span>
+              <span class="text-[10px] text-emerald-400 font-mono">${idea.potentialRevenue}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-1">${idea.problem}</p>
+            <p class="text-[11px] text-slate-300 font-medium">${idea.solution}</p>
+          `;
+          list.appendChild(card);
+        });
+      } catch (err) {
+        console.error("Market scan error:", err);
+      } finally {
+        btn.disabled = false;
+        btn.innerText = "Scan Market";
+      }
+    }
+
+    async function regenerateWireframes() {
+      const btn = document.getElementById("regenUiBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block animate-spin">↻</span> Generating...';
+
+      try {
+        const res = await fetch("/api/regenerate-ui", { method: "POST" });
+        const data = await res.json();
+        if (data.uiOptions) {
+          renderUiCards(data.uiOptions);
+        }
+      } catch (err) {
+        console.error("Failed to regenerate wireframes:", err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>↻ Re-roll Wireframes</span>';
+      }
+    }
+
+    function renderUiCards(options) {
+      const container = document.getElementById("uiOptionsContainer");
+      const picker = document.getElementById("uiPickerCard");
+      picker.classList.remove("hidden");
+      container.innerHTML = "";
 
       options.forEach(opt => {
-        const item = document.createElement('div');
-        item.className = "p-5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500 flex flex-col justify-between transition-all group shadow-2xl space-y-4";
-        item.innerHTML = `
+        const card = document.createElement("div");
+        card.className = "border border-slate-800 bg-slate-950/70 rounded-lg p-3 flex flex-col justify-between hover:border-emerald-500/60 transition gap-3";
+        card.innerHTML = `
           <div>
-            <div class="flex items-center justify-between mb-2">
-              <span class="font-bold text-sm text-slate-100">${opt.name}</span>
-              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background-color: ${opt.colorPalette.primary}"></span>
+            <div class="flex items-center justify-between mb-1.5">
+              <span class="text-xs font-bold text-white">${opt.name}</span>
+              <div class="flex gap-1">
+                <span class="w-3 h-3 rounded-full border border-white/20" style="background:${opt.colorPalette?.primary || '#10b981'}"></span>
+                <span class="w-3 h-3 rounded-full border border-white/20" style="background:${opt.colorPalette?.accent || '#34d399'}"></span>
+              </div>
             </div>
-            <div class="text-xs text-slate-400 mb-3">${opt.theme}</div>
-            <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 shadow-inner min-h-[180px] flex flex-col justify-center text-slate-100 overflow-hidden select-none pointer-events-none">
-              ${opt.previewHtml}
-            </div>
-            <div class="text-[11px] text-slate-400 mt-3"><strong class="text-slate-300">Layout:</strong> ${opt.layoutStyle}</div>
+            <p class="text-[11px] text-slate-400 line-clamp-2">${opt.description || ''}</p>
           </div>
-          <button onclick="confirmBuild('${opt.id}')" class="w-full text-xs bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-2.5 rounded-lg transition shadow-md shadow-emerald-500/20">
-            Build This Design →
+          <button onclick='confirmBuild(${JSON.stringify(opt)})' class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium text-xs py-1.5 rounded transition">
+            Build with this UI
           </button>
         `;
-        grid.appendChild(item);
+        container.appendChild(card);
       });
-
-      section.classList.remove('hidden');
-      section.scrollIntoView({ behavior: 'smooth' });
     }
 
-    async function confirmBuild(uiId) {
-      document.getElementById('uiSelectionCard').classList.add('hidden');
-      document.getElementById('jobBadge').innerText = "Building";
-      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse";
+    async function confirmBuild(chosenUI) {
+      const picker = document.getElementById("uiPickerCard");
+      picker.classList.add("hidden");
 
-      await fetch('/api/confirm-build', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ selectedUiId: uiId })
-      });
-
-      startPolling();
+      try {
+        await fetch("/api/confirm-build", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chosenUI })
+        });
+        startPolling();
+      } catch (err) {
+        console.error("Confirm build error:", err);
+      }
     }
 
-    function showLiveSandbox(timestamp) {
-      const previewSection = document.getElementById('previewSection');
-      previewSection.classList.remove('hidden');
-      const frame = document.getElementById('sandboxFrame');
-      frame.src = `http://localhost:3000?_t=${timestamp || Date.now()}`;
-      previewSection.scrollIntoView({ behavior: 'smooth' });
+    async function applyTweak() {
+      const promptEl = document.getElementById("tweakPrompt");
+      const instruction = promptEl ? promptEl.value.trim() : "";
+      if (!instruction) return;
+
+      const btn = document.getElementById("tweakBtn");
+      btn.disabled = true;
+      btn.innerHTML = '<span class="inline-block animate-spin">↻</span> Building Updates...';
+
+      try {
+        const res = await fetch("/api/tweak", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ instruction })
+        });
+        const data = await res.json();
+        if (data.status === "success") {
+          reloadPreview();
+          promptEl.value = "";
+        } else {
+          alert("Build iteration error: " + (data.error || "Unknown error"));
+        }
+      } catch (err) {
+        console.error("Failed to iterate:", err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Execute Build Prompt 🚀</span>';
+      }
+    }
+
+    async function resetPipeline() {
+      try {
+        await fetch("/api/reset", { method: "POST" });
+        location.reload();
+      } catch (err) {
+        console.error("Reset error:", err);
+      }
     }
 
     function reloadPreview() {
@@ -364,47 +344,45 @@
       if (frame) {
         frame.src = "/api/preview?t=" + Date.now();
       }
-    }`;
     }
 
-    async function submitTweak() {
-      const input = document.getElementById('tweakInput');
-      const tweakBtn = document.getElementById('tweakBtn');
-      const prompt = input.value.trim();
-      if (!prompt) return;
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        try {
+          const res = await fetch("/api/status");
+          const data = await res.json();
 
-      tweakBtn.disabled = true;
-      tweakBtn.innerText = "Applying...";
-      input.value = "";
+          document.getElementById("currentStepText").innerText = data.currentStep || data.status;
 
-      await fetch('/api/tweak', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt })
-      });
+          const consoleDiv = document.getElementById("logsConsole");
+          if (data.logs && data.logs.length > 0) {
+            consoleDiv.innerHTML = data.logs.map(l => `<div>> ${l}</div>`).join("");
+            consoleDiv.scrollTop = consoleDiv.scrollHeight;
+          }
 
-      startPolling();
-      setTimeout(() => {
-        tweakBtn.disabled = false;
-        tweakBtn.innerText = "Apply Tweak";
-        reloadPreview();
-      }, 3500);
-    }
+          if (data.uiOptions && data.uiOptions.length > 0 && data.status === "awaiting_ui_choice") {
+            renderUiCards(data.uiOptions);
+            const submitBtn = document.getElementById("submitBtn");
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Render 3 UI Wireframes';
+            }
+          }
 
-    async function deployToVercel() {
-      const btn = document.getElementById('deployBtn');
-      btn.disabled = true;
-      btn.innerText = "▲ Deploying...";
-      document.getElementById('jobBadge').innerText = "Deploying";
-      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse";
-
-      await fetch('/api/deploy', { method: 'POST' });
-      startPolling();
-
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.innerText = "▲ Deploy to Vercel";
-      }, 5000);
+          if (data.status === "done") {
+            clearInterval(pollInterval);
+            reloadPreview();
+            const submitBtn = document.getElementById("submitBtn");
+            if (submitBtn) {
+              submitBtn.disabled = false;
+              submitBtn.innerHTML = '<i class="fa-solid fa-paper-plane"></i> Render 3 UI Wireframes';
+            }
+          }
+        } catch (err) {
+          console.error("Polling error:", err);
+        }
+      }, 1500);
     }
   </script>
 </body>
