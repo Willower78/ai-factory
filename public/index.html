@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI SaaS Factory Cockpit</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .glass { background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.08); }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen">
+
+  <header class="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <div class="flex items-center space-x-3">
+        <div class="w-9 h-9 rounded-lg bg-emerald-500 flex items-center justify-center font-bold text-black text-xl">⚡</div>
+        <h1 class="font-bold text-lg">AI SaaS Factory <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded-full ml-2">Project Vault</span></h1>
+      </div>
+      <div class="flex items-center gap-3">
+        <button onclick="hardResetFactory()" class="text-xs bg-red-500/10 hover:bg-red-500/20 text-red-400 border border-red-500/30 px-3 py-1.5 rounded-lg transition font-mono">↻ Reset Pipeline</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="max-w-7xl mx-auto px-6 py-8 space-y-8">
+    
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      
+      <!-- Left Column: Tabs -->
+      <section class="lg:col-span-5 space-y-4">
+        
+        <div class="flex border-b border-slate-800 text-xs font-semibold">
+          <button onclick="switchTab('custom')" id="tabCustomBtn" class="pb-2 px-3 border-b-2 border-emerald-400 text-emerald-400">Custom Prompt & Files</button>
+          <button onclick="switchTab('market')" id="tabMarketBtn" class="pb-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">Market Scan (10)</button>
+          <button onclick="switchTab('vault')" id="tabVaultBtn" class="pb-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200">Saved Projects</button>
+        </div>
+
+        <!-- TAB 1: Custom Prompt -->
+        <div id="tabCustom" class="glass rounded-xl p-5 space-y-3">
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Custom Product Specification</label>
+            <textarea id="customPrompt" rows="4" placeholder="Describe the app you want to build..." 
+                      class="w-full bg-slate-900 border border-slate-800 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500"></textarea>
+          </div>
+
+          <div>
+            <label class="block text-xs font-medium text-slate-300 mb-1">Attach Spec & Codebase Files (.ZIP, PDF, CSV, TXT)</label>
+            <input type="file" id="fileInput" multiple class="block w-full text-xs text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-800 file:text-emerald-400 hover:file:bg-slate-700 cursor-pointer bg-slate-900 border border-slate-800 rounded-lg" />
+          </div>
+
+          <button onclick="submitCustomBuild()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs py-2.5 rounded-lg transition shadow-md shadow-emerald-500/20">
+            Shred & Dispatch to Isolated Agents →
+          </button>
+        </div>
+
+        <!-- TAB 2: Market Opportunities Feed -->
+        <div id="tabMarket" class="hidden space-y-3">
+          <div class="flex gap-2">
+            <input type="text" id="industryFilter" placeholder="Filter niche..." 
+                   class="flex-1 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500" 
+                   onkeydown="if(event.key === 'Enter') fetchIdeas()" />
+            <button onclick="fetchIdeas()" class="text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-black text-emerald-400 font-medium px-3 py-1.5 rounded-lg border border-emerald-500/30 transition">Scan</button>
+          </div>
+          <div id="ideasList" class="space-y-3 max-h-[45vh] overflow-y-auto pr-1"></div>
+        </div>
+
+        <!-- TAB 3: Saved Projects Vault Gallery -->
+        <div id="tabVault" class="hidden space-y-3">
+          <div class="flex justify-between items-center">
+            <span class="text-xs text-slate-400 font-mono">Archive Location: ~/ai-factory/projects_vault/</span>
+            <button onclick="fetchVaultProjects()" class="text-xs bg-slate-800 hover:bg-slate-700 px-2.5 py-1 rounded border border-slate-700">Refresh</button>
+          </div>
+          <div id="vaultList" class="space-y-3 max-h-[45vh] overflow-y-auto pr-1"></div>
+        </div>
+
+      </section>
+
+      <!-- Right Column: Logs -->
+      <section class="lg:col-span-7">
+        <div class="glass rounded-xl p-5 h-full flex flex-col justify-between">
+          <div class="flex items-center justify-between mb-3">
+            <span id="currentStepText" class="text-xs font-medium text-slate-300">Ready to plan</span>
+            <span id="jobBadge" class="text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700">Idle</span>
+          </div>
+
+          <div class="bg-black/70 border border-slate-800 rounded-lg p-4 font-mono text-xs text-slate-300 h-64 overflow-y-auto space-y-1.5" id="logBox">
+            <div class="text-slate-500">// Pipeline ready. Upload ZIP, enter prompt, or view Saved Projects...</div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 3 UI Wireframe Selection -->
+    <section id="uiSelectionCard" class="hidden glass rounded-2xl p-6 border border-emerald-500/40 space-y-6">
+      <div class="flex items-center justify-between border-b border-slate-800 pb-4">
+        <div>
+          <h2 class="text-base font-bold text-slate-100 flex items-center gap-2">
+            <span class="w-3 h-3 rounded-full bg-emerald-400 animate-pulse"></span>
+            Select Visual Design Direction
+          </h2>
+          <p class="text-xs text-slate-400">Pick the visual direction for Claude to build:</p>
+        </div>
+        <span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-3 py-1 rounded-full font-mono">3 Options Ready</span>
+      </div>
+      
+      <div id="uiCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-6"></div>
+    </section>
+
+    <!-- Sandbox & Deployment -->
+    <section id="previewSection" class="hidden glass rounded-2xl p-6 border border-slate-800 space-y-4">
+      
+      <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+        <div>
+          <h2 class="font-bold text-base text-slate-100 flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            Interactive Live Sandbox
+          </h2>
+          <p class="text-xs text-slate-400">Live preview running at localhost:3000. Tweak below or deploy directly to Vercel:</p>
+        </div>
+
+        <div class="flex items-center gap-2.5 flex-wrap">
+          <button onclick="reloadPreview()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition">↻ Reload Frame</button>
+          <button onclick="deployToVercel()" id="deployBtn" class="text-xs bg-white hover:bg-slate-200 text-black font-extrabold px-4 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-white/10">
+            <span>▲ Deploy to Vercel</span>
+          </button>
+          <a id="liveVercelLink" href="#" target="_blank" class="hidden text-xs bg-emerald-500 hover:bg-emerald-400 text-black font-extrabold px-4 py-1.5 rounded-lg transition animate-bounce">
+            Open Live App 🚀
+          </a>
+        </div>
+      </div>
+
+      <!-- Prompt Tweaker Bar -->
+      <div class="bg-slate-900/90 border border-slate-800 rounded-xl p-3 flex gap-2 items-center">
+        <input type="text" id="tweakInput" placeholder="Prompt a UI/UX tweak..." 
+               class="flex-1 bg-slate-950 border border-slate-800 rounded-lg px-4 py-2 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-emerald-500" 
+               onkeydown="if(event.key === 'Enter') submitTweak()" />
+        <button onclick="submitTweak()" id="tweakBtn" class="bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-xs px-5 py-2 rounded-lg transition">Apply Tweak</button>
+      </div>
+
+      <!-- Sandbox Iframe -->
+      <div class="rounded-xl overflow-hidden border border-slate-800 bg-slate-950 h-[700px] shadow-2xl relative">
+        <iframe id="sandboxFrame" src="about:blank" class="w-full h-full border-none"></iframe>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script>
+    let currentIdeas = [];
+    let pollInterval = null;
+
+    function switchTab(tab) {
+      const tabs = ['custom', 'market', 'vault'];
+      tabs.forEach(t => {
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}`).classList.add('hidden');
+        document.getElementById(`tab${t.charAt(0).toUpperCase() + t.slice(1)}Btn`).className = "pb-2 px-3 border-b-2 border-transparent text-slate-400 hover:text-slate-200";
+      });
+
+      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.remove('hidden');
+      document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}Btn`).className = "pb-2 px-3 border-b-2 border-emerald-400 text-emerald-400";
+
+      if (tab === 'market' && currentIdeas.length === 0) fetchIdeas();
+      if (tab === 'vault') fetchVaultProjects();
+    }
+
+    async function fetchVaultProjects() {
+      const list = document.getElementById('vaultList');
+      list.innerHTML = '<div class="p-6 text-center text-slate-400 text-xs glass rounded-xl animate-pulse">Loading saved builds...</div>';
+      const res = await fetch('/api/projects');
+      const data = await res.json();
+      
+      list.innerHTML = '';
+      if (!data.projects || data.projects.length === 0) {
+        list.innerHTML = '<div class="p-6 text-center text-slate-500 text-xs glass rounded-xl">No saved projects in vault yet.</div>';
+        return;
+      }
+
+      data.projects.forEach(p => {
+        const item = document.createElement('div');
+        item.className = "glass p-4 rounded-xl border border-slate-800 space-y-2";
+        item.innerHTML = `
+          <div class="flex justify-between items-start">
+            <div>
+              <h4 class="font-bold text-slate-100 text-xs">${p.name}</h4>
+              <span class="text-[10px] text-slate-400 font-mono">${p.savedAt}</span>
+            </div>
+            ${p.vercelUrl ? `<a href="${p.vercelUrl}" target="_blank" class="text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 px-2 py-0.5 rounded font-mono">Live on Vercel ↗</a>` : `<span class="text-[10px] text-slate-500 font-mono">Local Snapshot</span>`}
+          </div>
+          <div class="text-[9px] text-slate-500 font-mono truncate">Dir: ${p.path}</div>
+        `;
+        list.appendChild(item);
+      });
+    }
+
+    async function hardResetFactory() {
+      await fetch('/api/reset', { method: 'POST' });
+      document.getElementById('uiSelectionCard').classList.add('hidden');
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('liveVercelLink').classList.add('hidden');
+      document.getElementById('sandboxFrame').src = "about:blank";
+      document.getElementById('logBox').innerHTML = '<div class="text-slate-500">// Pipeline reset. Ready for new input...</div>';
+      document.getElementById('jobBadge').innerText = "Idle";
+      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-slate-800 text-slate-400 border border-slate-700";
+      document.getElementById('currentStepText').innerText = "Ready to plan";
+    }
+
+    async function submitCustomBuild() {
+      const prompt = document.getElementById('customPrompt').value.trim();
+      const filesInput = document.getElementById('fileInput');
+      
+      const formData = new FormData();
+      formData.append('customPrompt', prompt);
+      for (let i = 0; i < filesInput.files.length; i++) {
+        formData.append('attachments', filesInput.files[i]);
+      }
+
+      document.getElementById('uiSelectionCard').classList.add('hidden');
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('jobBadge').innerText = "Shredding Inputs";
+      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse";
+
+      await fetch('/api/custom-build', { method: 'POST', body: formData });
+      startPolling();
+    }
+
+    async function fetchIdeas() {
+      const list = document.getElementById('ideasList');
+      const query = document.getElementById('industryFilter').value.trim();
+      list.innerHTML = '<div class="p-8 text-center text-slate-400 text-sm glass rounded-xl animate-pulse">Scanning market gaps...</div>';
+      const res = await fetch(`/api/ideas?focus=${encodeURIComponent(query)}`);
+      const data = await res.json();
+      currentIdeas = data.ideas || [];
+      renderIdeas();
+    }
+
+    function renderIdeas() {
+      const list = document.getElementById('ideasList');
+      list.innerHTML = '';
+      currentIdeas.forEach((idea, idx) => {
+        const card = document.createElement('div');
+        card.className = "glass p-4 rounded-xl hover:border-emerald-500/50 transition cursor-pointer";
+        card.innerHTML = `
+          <div class="flex justify-between items-start mb-1">
+            <h4 class="font-bold text-slate-100 text-xs">${idea.title}</h4>
+            <span class="text-[9px] uppercase font-bold px-2 py-0.5 rounded bg-emerald-500/10 text-emerald-400">${idea.tier}</span>
+          </div>
+          <p class="text-[11px] text-slate-400 mb-2">${idea.tagline}</p>
+          <button onclick="startUIPlanning(${idx})" class="w-full text-xs bg-emerald-500/10 hover:bg-emerald-500 hover:text-black text-emerald-400 font-semibold py-1 rounded-md border border-emerald-500/30 transition">Render 3 UI Wireframes →</button>
+        `;
+        list.appendChild(card);
+      });
+    }
+
+    async function startUIPlanning(idx) {
+      document.getElementById('uiSelectionCard').classList.add('hidden');
+      document.getElementById('previewSection').classList.add('hidden');
+      document.getElementById('jobBadge').innerText = "Rendering UI";
+      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-amber-500/10 text-amber-400 border border-amber-500/20 animate-pulse";
+
+      await fetch('/api/prepare-ui', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ concept: currentIdeas[idx] })
+      });
+
+      startPolling();
+    }
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      pollInterval = setInterval(async () => {
+        const res = await fetch('/api/status');
+        const data = await res.json();
+        
+        document.getElementById('logBox').innerHTML = data.logs.map(l => `<div class="py-0.5">${l}</div>`).join('');
+        document.getElementById('logBox').scrollTop = document.getElementById('logBox').scrollHeight;
+        document.getElementById('currentStepText').innerText = data.currentStep;
+
+        if (data.status === 'awaiting_ui_choice') {
+          clearInterval(pollInterval);
+          document.getElementById('jobBadge').innerText = "Choice Needed";
+          document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-sky-500/10 text-sky-400 border border-sky-500/20";
+          renderVisualUICards(data.uiOptions);
+        } else if (data.status === 'completed') {
+          clearInterval(pollInterval);
+          document.getElementById('jobBadge').innerText = "Live";
+          document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-500 text-black";
+          showLiveSandbox(data.buildTimestamp);
+          if (data.deployedUrl) {
+            const liveLink = document.getElementById('liveVercelLink');
+            liveLink.href = data.deployedUrl;
+            liveLink.classList.remove('hidden');
+          }
+        }
+      }, 1200);
+    }
+
+    function renderVisualUICards(options) {
+      const section = document.getElementById('uiSelectionCard');
+      const grid = document.getElementById('uiCardsGrid');
+      grid.innerHTML = '';
+
+      options.forEach(opt => {
+        const item = document.createElement('div');
+        item.className = "p-5 rounded-xl bg-slate-900/90 border border-slate-800 hover:border-emerald-500 flex flex-col justify-between transition-all group shadow-2xl space-y-4";
+        item.innerHTML = `
+          <div>
+            <div class="flex items-center justify-between mb-2">
+              <span class="font-bold text-sm text-slate-100">${opt.name}</span>
+              <span class="w-3.5 h-3.5 rounded-full border border-white/20" style="background-color: ${opt.colorPalette.primary}"></span>
+            </div>
+            <div class="text-xs text-slate-400 mb-3">${opt.theme}</div>
+            <div class="bg-slate-950 rounded-xl p-4 border border-slate-800 shadow-inner min-h-[180px] flex flex-col justify-center text-slate-100 overflow-hidden select-none pointer-events-none">
+              ${opt.previewHtml}
+            </div>
+            <div class="text-[11px] text-slate-400 mt-3"><strong class="text-slate-300">Layout:</strong> ${opt.layoutStyle}</div>
+          </div>
+          <button onclick="confirmBuild('${opt.id}')" class="w-full text-xs bg-emerald-500 hover:bg-emerald-400 text-black font-bold py-2.5 rounded-lg transition shadow-md shadow-emerald-500/20">
+            Build This Design →
+          </button>
+        `;
+        grid.appendChild(item);
+      });
+
+      section.classList.remove('hidden');
+      section.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    async function confirmBuild(uiId) {
+      document.getElementById('uiSelectionCard').classList.add('hidden');
+      document.getElementById('jobBadge').innerText = "Building";
+      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 animate-pulse";
+
+      await fetch('/api/confirm-build', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ selectedUiId: uiId })
+      });
+
+      startPolling();
+    }
+
+    function showLiveSandbox(timestamp) {
+      const previewSection = document.getElementById('previewSection');
+      previewSection.classList.remove('hidden');
+      const frame = document.getElementById('sandboxFrame');
+      frame.src = `http://localhost:3000?_t=${timestamp || Date.now()}`;
+      previewSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function reloadPreview() {
+      const frame = document.getElementById('sandboxFrame');
+      frame.src = `http://localhost:3000?_t=${Date.now()}`;
+    }
+
+    async function submitTweak() {
+      const input = document.getElementById('tweakInput');
+      const tweakBtn = document.getElementById('tweakBtn');
+      const prompt = input.value.trim();
+      if (!prompt) return;
+
+      tweakBtn.disabled = true;
+      tweakBtn.innerText = "Applying...";
+      input.value = "";
+
+      await fetch('/api/tweak', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt })
+      });
+
+      startPolling();
+      setTimeout(() => {
+        tweakBtn.disabled = false;
+        tweakBtn.innerText = "Apply Tweak";
+        reloadPreview();
+      }, 3500);
+    }
+
+    async function deployToVercel() {
+      const btn = document.getElementById('deployBtn');
+      btn.disabled = true;
+      btn.innerText = "▲ Deploying...";
+      document.getElementById('jobBadge').innerText = "Deploying";
+      document.getElementById('jobBadge').className = "text-xs px-2.5 py-0.5 rounded-full font-medium bg-purple-500/10 text-purple-400 border border-purple-500/20 animate-pulse";
+
+      await fetch('/api/deploy', { method: 'POST' });
+      startPolling();
+
+      setTimeout(() => {
+        btn.disabled = false;
+        btn.innerText = "▲ Deploy to Vercel";
+      }, 5000);
+    }
+  </script>
+</body>
+</html>
