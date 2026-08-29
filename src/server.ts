@@ -86,8 +86,6 @@ app.get("/api/ideas", async (req, res) => {
     res.status(500).json({ ideas: [], error: err.message || "Failed to scan market" });
   }
 });
-  }
-});
 
 app.post("/api/custom-build", upload.array("attachments"), async (req, res) => {
   const customPrompt = req.body.customPrompt || "";
