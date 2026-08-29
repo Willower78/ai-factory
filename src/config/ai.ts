@@ -3,10 +3,13 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const apiKey = process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || "";
+const apiKey =
+  process.env.OPENROUTER_API_KEY ||
+  process.env.OPENAI_API_KEY ||
+  "sk-dummy-startup-key";
 
 export const openRouter = new OpenAI({
-  apiKey: apiKey,
+  apiKey,
   baseURL: "https://openrouter.ai/api/v1",
   defaultHeaders: {
     "HTTP-Referer": "https://render.com",
@@ -32,7 +35,7 @@ async function completePrompt(model: string, prompt: string, system?: string, te
   return completion.choices[0]?.message?.content || "";
 }
 
-// 1. Unified Gemini Runner
+// 1. Unified Gemini Runner (used by ideation, tester, legal, monitor)
 export async function generateWithGemini(params: {
   contents?: string;
   prompt?: string;
