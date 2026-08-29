@@ -122,7 +122,14 @@
         </div>
 
         <div class="flex items-center gap-2.5 flex-wrap">
-          <button onclick="reloadPreview()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg border border-slate-700 transition">↻ Reload Frame</button>
+          <div class="flex items-center gap-2">
+            <a href="/api/preview" target="_blank" class="text-xs bg-emerald-600 hover:bg-emerald-500 text-white font-medium px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+              <span>Open in New Tab ↗</span>
+            </a>
+            <button onclick="reloadPreview()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 border border-slate-700 px-3 py-1.5 rounded-lg transition">
+              ↻ Reload Frame
+            </button>
+          </div>
           <button onclick="deployToVercel()" id="deployBtn" class="text-xs bg-white hover:bg-slate-200 text-black font-extrabold px-4 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow-lg shadow-white/10">
             <span>▲ Deploy to Vercel</span>
           </button>
@@ -353,8 +360,11 @@
     }
 
     function reloadPreview() {
-      const frame = document.getElementById('sandboxFrame');
-      frame.src = `/api/preview?_t=${Date.now()}`;
+      const frame = document.getElementById("previewFrame");
+      if (frame) {
+        frame.src = "/api/preview?t=" + Date.now();
+      }
+    }`;
     }
 
     async function submitTweak() {
