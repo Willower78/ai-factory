@@ -6,7 +6,7 @@ dotenv.config();
 
 // 1. Direct Google Gemini Engine (Ideation, QA Tester, Legal, SRE)
 export const gemini = new GoogleGenAI({
-  apiKey: process.env.GEMINI_API_KEY || "",
+  apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || 'sk-dummy-key' || "",
 });
 
 export const GEMINI_CASCADE = [
@@ -43,7 +43,7 @@ export async function generateWithGemini(params: {
 // 2. OpenRouter Multi-Model Gateway
 export const openrouter = new OpenAI({
   baseURL: "https://openrouter.ai/api/v1",
-  apiKey: process.env.OPENROUTER_API_KEY || "",
+  apiKey: process.env.OPENROUTER_API_KEY || process.env.OPENAI_API_KEY || 'sk-dummy-key' || "",
   defaultHeaders: {
     "HTTP-Referer": "http://localhost:4000",
     "X-Title": "AI SaaS Factory",
