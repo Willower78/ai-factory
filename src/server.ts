@@ -188,6 +188,32 @@ app.post("/api/prepare-ui", async (req, res) => {
   }
 });
 
+
+app.post("/api/regenerate-ui", async (req, res) => {
+  if (!activeJob.partitioned) {
+    return res.status(400).json({ error: "No active project to regenerate designs for" });
+  }
+
+  activeJob.status = "planning";
+  activeJob.currentStep = "Generating 3 alternative UI blueprints...";
+  activeJob.logs.push("🎨 Operations Manager re-generating fresh design perspectives...");
+
+  try {
+    const rawUi = await runWireframeArchitect(activeJob.partitioned);
+    const textUi = typeof rawUi === "string" ? rawUi : (rawUi?.text || "");
+    const cleanUi = textUi.replace(/^\`\`\`json\s*/i, "").replace(/\`\`\`$/i, "").trim();
+    
+    let parsed = JSON.parse(cleanUi);
+    activeJob.uiOptions = Array.isArray(parsed) ? parsed : (parsed.options || []);
+    activeJob.logs.push("✨ 3 new wireframe blueprints ready for selection.");
+    
+    res.json({ uiOptions: activeJob.uiOptions });
+  } catch (err) {
+    console.error("Regeneration error:", err);
+    res.status(500).json({ error: "Failed to regenerate wireframes" });
+  }
+});
+
 app.post("/api/confirm-build", async (req, res) => {
   const { selectedUiId } = req.body;
   if (!activeJob.partitioned) return res.status(400).json({ error: "No active project" });
