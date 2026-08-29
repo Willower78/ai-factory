@@ -45,26 +45,38 @@ Output valid SQL only inside a markdown code block.`;
   const cleanSql = textSql.replace(/```sql\s*/gi, "").replace(/```/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "db", "schema.sql"), cleanSql);
 
-  // 2. Lead Coder (Claude) - Full Next.js 15 UI with European i18n & Dual Auth
-  console.log(`[Lead Coder - Claude] Writing Next.js 15 app with ALL European languages and Google + Email Auth...`);
-  
+    // 2. Lead Coder (Claude) - Full interactive single-page app
+  console.log("[Lead Coder - Claude] Writing standalone interactive prototype...");
+
   const uiPrompt = `Build a complete, visually stunning, fully interactive single-page application prototype based on this blueprint.
+Project: ${packet.projectName}
+Value Prop: ${packet.marketingPacket?.coreValueProp || ""}
+Design System: ${chosenUi?.name || "Neo-SaaS"} - ${chosenUi?.description || ""}
+
 Include:
 - Complete HTML document structure with Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
 - FontAwesome 6 / SVG icons
 - Fully interactive JavaScript state logic (tab switches, modals, dummy data actions, filterable tables, responsive drawer menus)
-- Ultra high-fidelity styling matching the selected visual theme.
+- High-fidelity styling matching the selected visual theme.
 
 Output the complete, runnable HTML markup inside a \`\`\`html code block.`;
 
-  // Ensure all Lucide icons, language switcher hooks, and Auth modal state transitions work seamlessly. Output TSX only.`;
+  const rawUi = await runFrontendSpecialist(uiPrompt, "You are an elite Lead Frontend & UI Architect. Output HTML code only.");
+  const textRawUi = typeof rawUi === "string" ? rawUi : (rawUi?.text || "");
 
-  const masterUi = await runMasterCoderReview(reviewPrompt, "You are the Master Code Quality Reviewer. Output TSX only.");
-  const textUi = typeof masterUi === "string" ? masterUi : (masterUi?.text || "");
-  const cleanUi = textUi.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
+  // 3. Master Code Quality Reviewer
+  const reviewPrompt = `Review and polish this application code for high UI/UX fidelity and full responsiveness:
+${textRawUi}
+
+Output the finalized, complete HTML document inside a \`\`\`html code block only.`;
+
+  const masterUi = await runMasterCoderReview(reviewPrompt, "You are the Master Code Quality Reviewer. Output HTML code only.");
+  const textUi = typeof masterUi === "string" ? masterUi : (masterUi?.text || textRawUi);
+  const cleanUi = textUi.replace(/```html\s*/gi, "").replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
+
   fs.writeFileSync(path.join(targetDir, "app", "page.tsx"), cleanUi);
   try {
     fs.writeFileSync(path.join(targetDir, "index.html"), cleanUi);
   } catch (e) {}
-  console.log("-> Code generation complete: output/app/app/page.tsx");
+  console.log("-> Code generation complete: output/app/index.html & app/page.tsx");
 }
