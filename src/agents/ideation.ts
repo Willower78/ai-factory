@@ -52,53 +52,50 @@ const fallbackIdeas: IdeaItem[] = [
   }
 ];
 
-export async function scanMarket(focus?: string): Promise<IdeaItem[]> {
-  const prompt = `You are a high-speed SaaS market researcher.
-Generate 4 high-ROI micro-SaaS product ideas. ${focus ? `Focus on: "${focus}"` : ""}
-
-Respond ONLY with a valid JSON array of objects. No markdown backticks, no explanations.
-Format:
-[
-  {
-    "id": "idea-1",
-    "title": "LeadPulse AI",
-    "tagline": "Short punchy one-sentence value proposition",
-    "niche": "Target Niche",
-    "tier": "High Value",
-    "problem": "Core problem solved",
-    "solution": "Key SaaS solution",
-    "targetAudience": "Target audience",
-    "mrrPotential": "$5k - $15k / mo",
-    "buildComplexity": "Low"
-  }
-]`;
-
+export async function scanMarket(focus?: string) {
   try {
-    const res = await generateWithGemini({ prompt, config: { temperature: 0.7 } });
-    let text = (res.text || "").trim();
-    text = text.replace(/^```json\s*/i, "").replace(/^```\s*/i, "").replace(/\s*```$/i, "").trim();
+    const prompt = `Identify 3 high-demand, underserved B2B/B2C SaaS market opportunities${focus ? ` focused on ${focus}` : ""}.
+For each opportunity provide:
+- name: string (Catchy SaaS product name)
+- problem: string (1 concise sentence describing the user pain point)
+- solution: string (1 concise sentence describing the core automated tool)
+- potentialRevenue: string (e.g. "$15k - $45k MRR")
+- difficulty: "Low" | "Medium" | "High"
 
-    if (text) {
-      const parsed = JSON.parse(text);
-      const items = Array.isArray(parsed) ? parsed : (parsed.ideas || []);
-      if (items.length > 0) {
-        return items.map((item: any, idx: number) => ({
-          id: item.id || `idea-${idx + 1}`,
-          title: item.title || item.name || "Micro SaaS Product",
-          tagline: item.tagline || item.solution || item.problem || "",
-          niche: item.niche || "B2B SaaS",
-          tier: item.tier || item.mrrPotential || "Micro-SaaS",
-          problem: item.problem || "",
-          solution: item.solution || "",
-          targetAudience: item.targetAudience || "",
-          mrrPotential: item.mrrPotential || "$5k - $15k / mo",
-          buildComplexity: item.buildComplexity || "Low"
-        }));
-      }
-    }
-  } catch (err: any) {
-    console.error("[Ideation Agent OpenRouter Log]:", err?.message || err);
+Return valid JSON array only inside a \`\`\`json code block.`;
+
+    const raw = await runIdeationAgent(prompt, "You are a Silicon Valley SaaS market analyst. Output valid JSON array only.");
+    const text = typeof raw === "string" ? raw : (raw?.text || "");
+    const clean = text.replace(/^```jsons*/i, "").replace(/```$/i, "").trim();
+    const parsed = JSON.parse(clean);
+    if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    if (parsed.ideas && Array.isArray(parsed.ideas)) return parsed.ideas;
+  } catch (err) {
+    console.warn("Market scan AI timeout/error, using instant fallback ideas:", err);
   }
 
-  return fallbackIdeas;
+  // Guaranteed fallback opportunities
+  return [
+    {
+      name: "ArbiPulse Pro",
+      problem: "Sports bettors and crypto traders miss cross-market mispricings due to manual odds calculations.",
+      solution: "Real-time arbitrage terminal calculating hedge stakes and locked-in profit margins across bookmakers.",
+      potentialRevenue: "$25k - $60k MRR",
+      difficulty: "Medium"
+    },
+    {
+      name: "ContentAudit AI",
+      problem: "SEO agencies waste 15+ hours weekly manually cataloging competitor content gaps and keyword decay.",
+      solution: "One-click SERP crawler that generates downloadable content refresh briefs and Schema markup.",
+      potentialRevenue: "$18k - $40k MRR",
+      difficulty: "Low"
+    },
+    {
+      name: "VenueFlow",
+      problem: "Independent sports clubs and venues struggle with fragmented ticket sales and manual booking spreadsheets.",
+      solution: "White-label embeddable booking calendar widget with automated Stripe payouts and QR check-ins.",
+      potentialRevenue: "$12k - $30k MRR",
+      difficulty: "Low"
+    }
+  ];
 }
