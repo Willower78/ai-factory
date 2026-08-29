@@ -5,7 +5,7 @@ import fs from "fs";
 import multer from "multer";
 import AdmZip from "adm-zip";
 import { spawn } from "child_process";
-import { runIdeationAgent } from "./agents/ideation";
+import { runIdeationAgent, scanMarket } from "./agents/ideation";
 import { runOperationsManagerAgent, PartitionedProject, UIOption } from "./agents/architect";
 import { runIsolatedCoderPipeline } from "./agents/coder";
 import { runIsolatedTesterAgent } from "./agents/tester";
