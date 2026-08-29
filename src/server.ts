@@ -257,7 +257,8 @@ ${currentCode}
 Return ONLY updated TSX code inside a standard markdown code block.`;
 
       const updated = await runExpertCoder(tweakPrompt, "You are a Next.js specialist. Output valid TSX only.");
-      const cleanUi = updated.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
+      const textUp = typeof updated === "string" ? updated : (updated?.text || "");
+      const cleanUi = textUp.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
       fs.writeFileSync(pagePath, cleanUi);
 
       activeJob.buildTimestamp = Date.now();

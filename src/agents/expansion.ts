@@ -28,7 +28,8 @@ export async function runExpansionAgents(blueprint: Blueprint) {
     
     const i18nPrompt = `You are a Senior Frontend Engineer. Create a lightweight JSON dictionary file ('${langChoice}.json') for translations of the app "${blueprint.projectName}" with common UI labels and keys. Output ONLY raw JSON.`;
     const res = await generateWithGemini({ contents: i18nPrompt });
-    const cleanJson = res.replace(/```json\s*/g, "").replace(/```/g, "").trim();
+    const rawText = typeof res === "string" ? res : (res?.text || "");
+    const cleanJson = rawText.replace(/```json\s*/g, "").replace(/```/g, "").trim();
     fs.writeFileSync(path.join(targetDir, "locales", `${langChoice}.json`), cleanJson);
     console.log(`-> Saved: output/app/locales/${langChoice}.json`);
   }

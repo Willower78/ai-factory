@@ -16,7 +16,8 @@ Output ONLY raw JSON.`;
     config: { temperature: 0.2 },
   });
 
-  const clean = res.replace(/^```json\s*/, "").replace(/```$/, "").trim();
+  const rawText = typeof res === "string" ? res : (res?.text || "");
+  const clean = rawText.replace(/^```json\s*/, "").replace(/```$/, "").trim();
   fs.writeFileSync(path.join(targetDir, "HEALTH_AUDIT.json"), clean);
   console.log("-> Saved: output/app/HEALTH_AUDIT.json");
 }

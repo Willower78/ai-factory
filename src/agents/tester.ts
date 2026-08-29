@@ -17,6 +17,7 @@ ${JSON.stringify(journeys, null, 2)}
 Output valid TypeScript test code only inside a markdown code block.`;
 
   const res = await generateWithGemini({ contents: prompt, config: { temperature: 0.1 } });
-  const cleanCode = res.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
+  const rawText = typeof res === "string" ? res : (res?.text || "");
+  const cleanCode = rawText.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "e2e.spec.ts"), cleanCode);
 }

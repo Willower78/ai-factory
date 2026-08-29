@@ -17,6 +17,7 @@ Accepts Payments: ${hasPayments}
 Output clean Markdown only.`;
 
   const res = await generateWithGemini({ contents: prompt, config: { temperature: 0.2 } });
-  const cleanDoc = res.replace(/^```markdown\s*/gi, "").replace(/```$/g, "").trim();
+  const rawText = typeof res === "string" ? res : (res?.text || "");
+  const cleanDoc = rawText.replace(/^```markdown\s*/gi, "").replace(/```$/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "LEGAL.md"), cleanDoc);
 }

@@ -41,7 +41,8 @@ Include:
 Output valid SQL only inside a markdown code block.`;
 
   const rawSql = await runBackendSpecialist(sqlPrompt, "You are a database architect. Output valid SQL only.");
-  const cleanSql = rawSql.replace(/```sql\s*/gi, "").replace(/```/g, "").trim();
+  const textSql = typeof rawSql === "string" ? rawSql : (rawSql?.text || "");
+  const cleanSql = textSql.replace(/```sql\s*/gi, "").replace(/```/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "db", "schema.sql"), cleanSql);
 
   // 2. Lead Coder (Claude) - Full Next.js 15 UI with European i18n & Dual Auth
@@ -85,7 +86,8 @@ ${draftUi}
 Ensure all Lucide icons, language switcher hooks, and Auth modal state transitions work seamlessly. Output TSX only.`;
 
   const masterUi = await runMasterCoderReview(reviewPrompt, "You are the Master Code Quality Reviewer. Output TSX only.");
-  const cleanUi = masterUi.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
+  const textUi = typeof masterUi === "string" ? masterUi : (masterUi?.text || "");
+  const cleanUi = textUi.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "app", "page.tsx"), cleanUi);
   console.log("-> Code generation complete: output/app/app/page.tsx");
 }

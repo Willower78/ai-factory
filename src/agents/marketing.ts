@@ -19,6 +19,7 @@ Core Value Proposition: ${valueProp}
 Output clean Markdown only.`;
 
   const res = await runMarketingSpecialist(prompt, "You are a SaaS Growth Strategist.");
-  const cleanDoc = res.replace(/^```markdown\s*/gi, "").replace(/```$/g, "").trim();
+  const rawText = typeof res === "string" ? res : (res?.text || "");
+  const cleanDoc = rawText.replace(/^```markdown\s*/gi, "").replace(/```$/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "MARKETING.md"), cleanDoc);
 }
