@@ -48,46 +48,23 @@ Output valid SQL only inside a markdown code block.`;
   // 2. Lead Coder (Claude) - Full Next.js 15 UI with European i18n & Dual Auth
   console.log(`[Lead Coder - Claude] Writing Next.js 15 app with ALL European languages and Google + Email Auth...`);
   
-  const uiPrompt = `Build page.tsx for Next.js 15 App Router using TypeScript and Tailwind CSS.
-App Name: "${project.projectName || 'Enterprise SaaS'}"
-Audience: "${project.frontendPacket?.targetAudience || 'European Users'}"
+  const uiPrompt = `Build a complete, visually stunning, fully interactive single-page application prototype based on this blueprint.
+Include:
+- Complete HTML document structure with Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>
+- FontAwesome 6 / SVG icons
+- Fully interactive JavaScript state logic (tab switches, modals, dummy data actions, filterable tables, responsive drawer menus)
+- Ultra high-fidelity styling matching the selected visual theme.
 
-MANDATORY FEATURES TO IMPLEMENT:
-1. ALL EUROPEAN LANGUAGES (i18n):
-   - Provide a language switcher dropdown in the header supporting:
-     🇸🇪 Svenska (sv), 🇬🇧 English (en), 🇩🇪 Deutsch (de), 🇫🇷 Français (fr), 🇪🇸 Español (es), 🇮🇹 Italiano (it), 🇳🇱 Nederlands (nl), 🇵🇱 Polski (pl), 🇩🇰 Dansk (da), 🇳🇴 Norsk (no), 🇫🇮 Suomi (fi).
-   - Implement an in-memory dictionary / translation hook (useLanguage / t('key')) that translates headers, buttons, cards, table columns, and auth prompts dynamically.
+Output the complete, runnable HTML markup inside a \`\`\`html code block.`;
 
-2. DUAL AUTHENTICATION SYSTEM (Google SSO + Email/Password):
-   - Header shows "Sign In / Register" button when unauthenticated, or User Avatar with dropdown when logged in.
-   - Beautiful Auth Modal containing:
-     * "Continue with Google" (with official Google 'G' icon & 1-click SSO simulation).
-     * Divider ("or with email").
-     * Email & Password input fields with validation and "Sign In / Create Account" tab toggle.
-     * Switch between simulated test users (e.g. Admin, Player/User, Guest).
-
-3. DESIGN SYSTEM & POLISH:
-   - Theme: ${themeName}
-   - Primary Accent: ${primaryColor}
-   - Canvas Background: ${bgColor}
-   - Layout: ${layoutStyle}
-   - Interactive widgets, stat KPI cards with percentage trends, interactive data tables with search/filter, and action modals.
-
-Output ONLY valid TSX code inside a standard markdown code block.`;
-
-  const draftUi = await runExpertCoder(uiPrompt, "You are an elite Next.js full-stack engineer. Output TSX only.");
-
-  // 3. Master Coder (Claude 3.7) Review
-  console.log("[Master Coder - Claude 3.7] Reviewing code quality, i18n stability & Auth modal...");
-  const reviewPrompt = `Audit and finalize this Next.js TSX component:
-\`\`\`tsx
-${draftUi}
-\`\`\`
-Ensure all Lucide icons, language switcher hooks, and Auth modal state transitions work seamlessly. Output TSX only.`;
+  // Ensure all Lucide icons, language switcher hooks, and Auth modal state transitions work seamlessly. Output TSX only.`;
 
   const masterUi = await runMasterCoderReview(reviewPrompt, "You are the Master Code Quality Reviewer. Output TSX only.");
   const textUi = typeof masterUi === "string" ? masterUi : (masterUi?.text || "");
   const cleanUi = textUi.replace(/```tsx?\s*/gi, "").replace(/```/g, "").trim();
   fs.writeFileSync(path.join(targetDir, "app", "page.tsx"), cleanUi);
+  try {
+    fs.writeFileSync(path.join(targetDir, "index.html"), cleanUi);
+  } catch (e) {}
   console.log("-> Code generation complete: output/app/app/page.tsx");
 }
