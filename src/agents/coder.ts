@@ -1,3 +1,4 @@
+import { getVaultInspiration } from "../utils/vault";
 import fs from "fs";
 import path from "path";
 import { runBackendSpecialist, runExpertCoder, runMasterCoderReview } from "../config/ai";
@@ -49,6 +50,8 @@ Output valid SQL only inside a markdown code block.`;
     console.warn("Backend schema generation warning:", err);
   }
 
+  // 2. Lead Coder - Inject past Vault inspiration
+  const vaultSnippets = getVaultInspiration();
   // 2. Lead Coder (Claude) - Full Standalone Interactive Beta App
   console.log("[Lead Coder - Claude] Writing standalone interactive prototype...");
 
@@ -57,6 +60,9 @@ Project: ${packet?.projectName || "SaaS Platform"}
 Value Prop: ${packet?.marketingPacket?.coreValueProp || ""}
 Design System: ${themeName} - ${chosenUi?.description || ""}
 Theme Palette: Primary ${primaryColor}, Accent ${accentColor}, Background ${bgColor}, Layout: ${layoutStyle}
+
+PAST VAULT PATTERNS FOR INSPIRATION:
+${vaultSnippets ? vaultSnippets : "None yet - build clean baseline."}
 
 CRITICAL REQUIREMENTS:
 - Embedded Tailwind CSS CDN: <script src="https://cdn.tailwindcss.com"></script>

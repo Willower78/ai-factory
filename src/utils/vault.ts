@@ -60,3 +60,21 @@ export function listVaultProjects(): VaultProject[] {
 
   return projects.reverse();
 }
+
+export function getVaultInspiration(): string {
+  const vaultDir = path.resolve(process.cwd(), "vault");
+  if (!fs.existsSync(vaultDir)) return "";
+  
+  const projects = fs.readdirSync(vaultDir).filter(f => fs.statSync(path.join(vaultDir, f)).isDirectory());
+  let snippets = "";
+  
+  for (const p of projects.slice(-3)) { // Read up to 3 recent vault projects
+    const schemaPath = path.join(vaultDir, p, "db", "schema.sql");
+    const pagePath = path.join(vaultDir, p, "index.html");
+    
+    if (fs.existsSync(schemaPath)) {
+      snippets += `\n--- [Vault Inspiration - Schema from ${p}] ---\n` + fs.readFileSync(schemaPath, "utf8").slice(0, 1000);
+    }
+  }
+  return snippets;
+}
