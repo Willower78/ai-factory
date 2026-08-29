@@ -3,7 +3,7 @@ import path from "path";
 import { runBackendSpecialist, runExpertCoder, runMasterCoderReview } from "../config/ai";
 import { PartitionedProject, UIOption } from "./architect";
 
-export async function runIsolatedCoderPipeline(project: PartitionedProject, chosenUI?: UIOption) {
+export async function runIsolatedCoderPipeline(packet: any, chosenUi: any) {
   const targetDir = path.join(process.cwd(), "output", "app");
   fs.mkdirSync(path.join(targetDir, "components"), { recursive: true });
   fs.mkdirSync(path.join(targetDir, "app"), { recursive: true });
